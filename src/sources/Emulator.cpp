@@ -7,22 +7,25 @@
 
 #include "../headers/Chip8.h"
 
+constexpr unsigned int WIDTH_C = 64;
+constexpr unsigned int HEIGHT_C = 32;
+constexpr double TIMER_HZ_C = 60;
+constexpr double CPU_HZ_C = 700;
+
+
+
 
 Emulator::Emulator(const std::string& _romName,
                    const unsigned int _scale = 25,
                    const sf::Color _bgColor = sf::Color::Black,
                    const sf::Color _fgColor = sf::Color::White)
 
-                  : WIDTH_C(64),
-                    HEIGHT_C(32),
-                    SCALE_C(_scale),
+                  : SCALE_C(_scale),
                     bgColor(_bgColor),
                     fgColor(_fgColor),
                     screenTexture({WIDTH_C, HEIGHT_C}),
                     screenSprite(screenTexture),
-                    romName(_romName),
-                    TIMER_HZ_C(60),
-                    CPU_HZ_C(500){
+                    romName(_romName){
 
     if (bgColor == fgColor){
         if (fgColor != sf::Color::Black) {
@@ -113,6 +116,8 @@ void Emulator::mainLoop() {
 
 
     window = new sf::RenderWindow( sf::VideoMode( { WIDTH_C*SCALE_C, HEIGHT_C*SCALE_C} ), "Chip8" );
+    window->setVerticalSyncEnabled(false);
+    window->setFramerateLimit(0);
     Chip8 chip8(romName);
 
     sf::Clock clock;
@@ -124,25 +129,23 @@ void Emulator::mainLoop() {
         frameTimer += delta;
         cycleTimer += delta;
 
-        handleEvents();
+
 
 
         while (cycleTimer >= CYCLE_TIME) {
+            chip8.UpdateKeystate();
+            handleEvents();
             chip8.Cycle();
             cycleTimer -= CYCLE_TIME;
         }
 
         while (frameTimer >= FRAME_TIME) {
             chip8.TickTimers();
-
-            if (true || chip8.GetScreenChange()) {
-                updateScreen(chip8.GetScreen());
-               // std::cout << "Screen Changed" << std::endl;
-            }
-
             frameTimer -= FRAME_TIME;
         }
 
+        if (chip8.GetScreenChange())
+            updateScreen(chip8.GetScreen());
 
         window->clear();
         window->draw(screenSprite);
@@ -157,16 +160,9 @@ void Emulator::handleEvents() {
             window->close();
         }
 
-        if (event->is<sf::Event::KeyPressed>()) {
-            flipAt(0, 0);
-            flipAt(63, 0);
-            flipAt(63, 31);
-            flipAt(0, 31);
-            flipAt(5, 10);
-            flipAt(32, 16);
-
-
-        }
     }
 }
+
+
+
 

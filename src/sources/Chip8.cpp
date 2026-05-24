@@ -10,6 +10,8 @@
 #include <iomanip>
 #include <bitset>
 
+#include "SFML/Window/Keyboard.hpp"
+
 constexpr int MEM_START = 0x200;
 constexpr int MEM_SIZE = 4096;
 constexpr int FONTSET_START = 0x50;
@@ -34,6 +36,41 @@ constexpr uint8_t FONTSET[FONTSET_SIZE] =
     0xF0, 0x80, 0xF0, 0x80, 0x80  // F
 };
 
+constexpr sf::Keyboard::Scan KEYMAP[16] = {
+
+    sf::Keyboard::Scan::X,
+    sf::Keyboard::Scan::Num1,
+    sf::Keyboard::Scan::Num2,
+    sf::Keyboard::Scan::Num3,
+    sf::Keyboard::Scan::Q,
+    sf::Keyboard::Scan::W,
+    sf::Keyboard::Scan::E,
+    sf::Keyboard::Scan::A,
+    sf::Keyboard::Scan::S,
+    sf::Keyboard::Scan::D,
+    sf::Keyboard::Scan::Z,
+    sf::Keyboard::Scan::C,
+    sf::Keyboard::Scan::Num4,
+    sf::Keyboard::Scan::R,
+    sf::Keyboard::Scan::F,
+    sf::Keyboard::Scan::V,
+
+/*  Each input is a hex value, mapped
+    as follows.
+
+    +-+-+-+-+    +-+-+-+-+
+    |1|2|3|C|    |1|2|3|4|
+    +-+-+-+-+    +-+-+-+-+
+    |4|5|6|D|    |Q|W|E|R|
+    +-+-+-+-+ => +-+-+-+-+
+    |7|8|9|E|    |A|S|D|F|
+    +-+-+-+-+    +-+-+-+-+
+    |A|0|B|F|    |Z|X|C|V|
+    +-+-+-+-+    +-+-+-+-+
+*/
+
+};
+
 
 Chip8::Chip8(const std::string& _romName) :
             romName(_romName),
@@ -47,7 +84,9 @@ Chip8::Chip8(const std::string& _romName) :
             soundTimer(0),
             delayTimer(0),
             screenChange(false),
-            screen(64*32, 0){
+            screen(64*32, 0),
+            keys(16, false),
+            waitingForKey(-1){
 
     loadRom();
     loadFonts();
@@ -59,6 +98,10 @@ Chip8::Chip8(const std::string& _romName) :
 
 void Chip8::Cycle() {
     screenChange = false;
+
+    if (waitingForKey != -1)
+        progCounter -= 2;
+
     opcode = (memory.at(progCounter) << 8) | memory.at(progCounter+1);
     progCounter += 2;
     callOpcode();
@@ -71,6 +114,16 @@ void Chip8::TickTimers() {
 
     if (delayTimer > 0)
         delayTimer--;
+}
+
+void Chip8::UpdateKeystate() {
+    for (int i = 0; i < 16; i++) {
+        keys[i] = sf::Keyboard::isKeyPressed(KEYMAP[i]);
+        if (waitingForKey != -1 && keys[i]) {
+            registers[waitingForKey] = i;
+            waitingForKey = -1;
+        }
+    }
 }
 
 bool Chip8::GetScreenChange() const{
@@ -346,6 +399,8 @@ void Chip8::OP_8xy1() {
     const int x = (opcode & 0x0F00) >> 8;
     const int y = (opcode & 0x00F0) >> 4;
     registers[x] |= registers[y];
+    //for quirks
+    registers[0xF] = 0;
 }
 
 //Opcode 8xy2
@@ -355,6 +410,8 @@ void Chip8::OP_8xy2() {
     const int x = (opcode & 0x0F00) >> 8;
     const int y = (opcode & 0x00F0) >> 4;
     registers[x] &= registers[y];
+    //for quirks
+    registers[0xF] = 0;
 }
 
 //Opcode 8xy3
@@ -364,6 +421,8 @@ void Chip8::OP_8xy3() {
     const int x = (opcode & 0x0F00) >> 8;
     const int y = (opcode & 0x00F0) >> 4;
     registers[x] ^= registers[y];
+    //for quirks
+    registers[0xF] = 0;
 }
 
 //Opcode 8xy4
@@ -371,9 +430,10 @@ void Chip8::OP_8xy3() {
 void Chip8::OP_8xy4() {
     //std::cout << "OP_8xy4\n";
     const int x = (opcode & 0x0F00) >> 8;
-    const int y = (opcode & 0x00F0) >> 4;
-    registers[0] = (registers[x] + registers[y] > 8) ? 1 : 0;
-    registers[x] += registers[y];
+    const int vx = registers[x];
+    const int vy = registers[(opcode & 0x00F0) >> 4];
+    registers[x] = vx + vy;
+    registers[0xF] = (vx + vy > 255) ? 1 : 0;
 
 }
 
@@ -382,9 +442,10 @@ void Chip8::OP_8xy4() {
 void Chip8::OP_8xy5() {
     //std::cout << "OP_8xy5\n";
     const int x = (opcode & 0x0F00) >> 8;
-    const int y = (opcode & 0x00F0) >> 4;
-    registers[0] = (registers[x] > registers[y]) ? 1 : 0;
-    registers[x] -= registers[y];
+    const int vx = registers[x];
+    const int vy = registers[(opcode & 0x00F0) >> 4];
+    registers[x] = vx - vy;
+    registers[0xF] = (vx >= vy) ? 1 : 0;
 }
 
 //Opcode 8xy6
@@ -395,13 +456,15 @@ void Chip8::OP_8xy5() {
 void Chip8::OP_8xy6() {
     //std::cout << "OP_8xy6\n";
     const int x = (opcode & 0x0F00) >> 8;
+    const int vx = registers[x];
 
-    if (registers[x] & 0x1)
+    registers[x] >>= 1;
+
+    if (vx & 0x1)
         registers[0xF] = 1;
     else
         registers[0xF] = 0;
 
-    registers[x] >>= 1;
 
 
 }
@@ -411,11 +474,13 @@ void Chip8::OP_8xy6() {
 void Chip8::OP_8xy7() {
     //std::cout << "OP_8xy7\n";
     const int x = (opcode & 0x0F00) >> 8;
-    const int y = (opcode & 0x00F0) >> 4;
-    if (registers[y] > registers[x])
+    const int vx = registers[x];
+    const int vy = registers[(opcode & 0x00F0) >> 4];
+    registers[x] = vy - vx;
+    if (vy >= vx)
         registers[0xF] = 1;
-    registers[x] = registers[y] - registers[x];
-
+    else
+        registers[0xF] = 0;
 }
 
 //Opcode 8xyE
@@ -427,12 +492,16 @@ void Chip8::OP_8xy7() {
 void Chip8::OP_8xyE() {
     //std::cout << "OP_8xyE\n";
     const int x = (opcode & 0x0F00) >> 8;
-    if (registers[x] & 0x1000)
+    const int vx = registers[x];
+
+    registers[x] <<= 1;
+
+    if (vx & 0x80)
         registers[0xF] = 1;
     else
         registers[0xF] = 0;
 
-    registers[x] <<= 1;
+
 
 }
 
@@ -452,21 +521,26 @@ void Chip8::OP_00E0() {
 void Chip8::OP_00EE() {
     //std::cout << "OP_00EE\n";
     progCounter = stack[stackPointer--];
-
-
 }
 
 //Opcode ExA1
+//    Skip next instruction if key
+//    with the value of Vx is not pressed.
 void Chip8::OP_ExA1() {
-    std::cout << "OP_ExA1\n";
-
-
+    //std::cout << "OP_ExA1\n";
+    const int x = (opcode & 0x0F00) >> 8;
+    if (!keys[registers[x]])
+        progCounter += 2;
 }
 
 //Opcode Ex9E
+//    Skip next instruction if key
+//    with the value of Vx is pressed.
 void Chip8::OP_Ex9E() {
-    std::cout << "OP_Ex9E\n";
-
+    //std::cout << "OP_Ex9E\n";
+    const int x = (opcode & 0x0F00) >> 8;
+    if (keys[registers[x]])
+        progCounter += 2;
 }
 
 //Opcode Fx07
@@ -479,15 +553,19 @@ void Chip8::OP_Fx07() {
 }
 
 //Opcode Fx0A
+//    Wait for a key press, store
+//    value in vx
 void Chip8::OP_Fx0A() {
-    std::cout << "OP_Fx0A\n";
+    //std::cout << "OP_Fx0A\n";
+    const int x = (opcode & 0x0F00) >> 8;
+    waitingForKey = x;
 
 }
 
 //Opcode Fx15
 //    set delaytimer = vx
 void Chip8::OP_Fx15() {
-    std::cout << "OP_Fx15\n";
+    //std::cout << "OP_Fx15\n";
     const int x = (opcode & 0x0F00) >> 8;
     delayTimer = registers[x];
 

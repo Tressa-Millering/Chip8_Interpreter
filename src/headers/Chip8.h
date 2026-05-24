@@ -14,8 +14,10 @@ public:
     Chip8(const std::string&);
     void Cycle();
     void TickTimers();
+    void UpdateKeystate();
     bool GetScreenChange() const;
     const std::vector<uint8_t>& GetScreen() const;
+
 
 private:
     std::string romName;
@@ -31,6 +33,9 @@ private:
 
     bool screenChange;
     std::vector<uint8_t> screen;
+
+    std::vector<bool> keys;
+    int waitingForKey;
 
     void (Chip8::*masterTable[0xF + 1])();
     void (Chip8::*table0[0xE + 1])();
