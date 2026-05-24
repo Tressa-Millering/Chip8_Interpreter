@@ -88,7 +88,8 @@ void Emulator::flipAt(unsigned int i) {
 }
 
 void Emulator::flipAt(const unsigned int x, const unsigned int y) {
-    const unsigned int i = (x + WIDTH_C * y);
+    const unsigned int clippedY = (y > 31 ? 31 : y);
+    const unsigned int i = (x + WIDTH_C * clippedY);
     sf::Color drawColor;
     try {
         if (screenBuffer.at(i))
@@ -135,17 +136,20 @@ void Emulator::mainLoop() {
         while (cycleTimer >= CYCLE_TIME) {
             chip8.UpdateKeystate();
             handleEvents();
-            chip8.Cycle();
+            if (!chip8.GetScreenChange())
+                chip8.Cycle();
             cycleTimer -= CYCLE_TIME;
         }
 
         while (frameTimer >= FRAME_TIME) {
             chip8.TickTimers();
             frameTimer -= FRAME_TIME;
+            if (chip8.GetScreenChange()){
+                updateScreen(chip8.GetScreen());
+                chip8.SetScreenChange(false);
+            }
         }
 
-        if (chip8.GetScreenChange())
-            updateScreen(chip8.GetScreen());
 
         window->clear();
         window->draw(screenSprite);

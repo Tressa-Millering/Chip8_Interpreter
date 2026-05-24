@@ -10,95 +10,16 @@
 #include <iomanip>
 #include <bitset>
 
-#include "SFML/Window/Keyboard.hpp"
-
-constexpr int MEM_START = 0x200;
-constexpr int MEM_SIZE = 4096;
-constexpr int FONTSET_START = 0x50;
-constexpr int FONTSET_SIZE = 80;
-constexpr uint8_t FONTSET[FONTSET_SIZE] =
-{
-    0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
-    0x20, 0x60, 0x20, 0x20, 0x70, // 1
-    0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2
-    0xF0, 0x10, 0xF0, 0x10, 0xF0, // 3
-    0x90, 0x90, 0xF0, 0x10, 0x10, // 4
-    0xF0, 0x80, 0xF0, 0x10, 0xF0, // 5
-    0xF0, 0x80, 0xF0, 0x90, 0xF0, // 6
-    0xF0, 0x10, 0x20, 0x40, 0x40, // 7
-    0xF0, 0x90, 0xF0, 0x90, 0xF0, // 8
-    0xF0, 0x90, 0xF0, 0x10, 0xF0, // 9
-    0xF0, 0x90, 0xF0, 0x90, 0x90, // A
-    0xE0, 0x90, 0xE0, 0x90, 0xE0, // B
-    0xF0, 0x80, 0x80, 0x80, 0xF0, // C
-    0xE0, 0x90, 0x90, 0x90, 0xE0, // D
-    0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
-    0xF0, 0x80, 0xF0, 0x80, 0x80  // F
-};
-
-constexpr sf::Keyboard::Scan KEYMAP[16] = {
-
-    sf::Keyboard::Scan::X,
-    sf::Keyboard::Scan::Num1,
-    sf::Keyboard::Scan::Num2,
-    sf::Keyboard::Scan::Num3,
-    sf::Keyboard::Scan::Q,
-    sf::Keyboard::Scan::W,
-    sf::Keyboard::Scan::E,
-    sf::Keyboard::Scan::A,
-    sf::Keyboard::Scan::S,
-    sf::Keyboard::Scan::D,
-    sf::Keyboard::Scan::Z,
-    sf::Keyboard::Scan::C,
-    sf::Keyboard::Scan::Num4,
-    sf::Keyboard::Scan::R,
-    sf::Keyboard::Scan::F,
-    sf::Keyboard::Scan::V,
-
-/*  Each input is a hex value, mapped
-    as follows.
-
-    +-+-+-+-+    +-+-+-+-+
-    |1|2|3|C|    |1|2|3|4|
-    +-+-+-+-+    +-+-+-+-+
-    |4|5|6|D|    |Q|W|E|R|
-    +-+-+-+-+ => +-+-+-+-+
-    |7|8|9|E|    |A|S|D|F|
-    +-+-+-+-+    +-+-+-+-+
-    |A|0|B|F|    |Z|X|C|V|
-    +-+-+-+-+    +-+-+-+-+
-*/
-
-};
 
 
-Chip8::Chip8(const std::string& _romName) :
-            romName(_romName),
-            memory(MEM_SIZE, 0),
-            registers(16, 0),
-            stack(16, 0),
-            index(0),
-            progCounter(MEM_START),
-            stackPointer(0),
-            opcode(0),
-            soundTimer(0),
-            delayTimer(0),
-            screenChange(false),
-            screen(64*32, 0),
-            keys(16, false),
-            waitingForKey(-1){
 
+Chip8::Chip8(const std::string& _romName) : romName(_romName) {
     loadRom();
     loadFonts();
     tableInit();
-
-
-
 }
 
 void Chip8::Cycle() {
-    screenChange = false;
-
     if (waitingForKey != -1)
         progCounter -= 2;
 
@@ -118,8 +39,9 @@ void Chip8::TickTimers() {
 
 void Chip8::UpdateKeystate() {
     for (int i = 0; i < 16; i++) {
+        prevKeys[i] = keys[i];
         keys[i] = sf::Keyboard::isKeyPressed(KEYMAP[i]);
-        if (waitingForKey != -1 && keys[i]) {
+        if (waitingForKey != -1 && prevKeys[i] && !keys[i]) {
             registers[waitingForKey] = i;
             waitingForKey = -1;
         }
@@ -129,6 +51,11 @@ void Chip8::UpdateKeystate() {
 bool Chip8::GetScreenChange() const{
     return screenChange;
 }
+
+void Chip8::SetScreenChange(bool _screenChange) {
+    screenChange = _screenChange;
+}
+
 
 const std::vector<uint8_t>& Chip8::GetScreen() const{
     return screen;
@@ -295,7 +222,7 @@ void Chip8::OP_4xkk() {
 void Chip8::OP_5xy0() {
     //std::cout << "OP_5xy0\n";
     const int x = (opcode & 0x0F00) >> 8;
-    const int y = (opcode & 0x00F) >> 4;
+    const int y = (opcode & 0x00F0) >> 4;
     if (registers[x] == registers[y]) {
         progCounter+=2;
     }
@@ -343,7 +270,7 @@ void Chip8::OP_Annn() {
 void Chip8::OP_Bnnn() {
     //std::cout << "OP_Bnnn\n";
     const int nnn = opcode & 0x0FFF;
-    opcode = registers[0] + nnn;
+    progCounter = registers[0] + nnn;
 }
 
 //Opcode Cxkk
@@ -361,26 +288,34 @@ void Chip8::OP_Cxkk() {
 //    Display n-byte sprite starting at memory
 //    location I at (Vx, Vy), set VF = collision.
 void Chip8::OP_Dxyn() {
+
     const int x = (opcode & 0x0F00) >> 8;
     const int y = (opcode & 0x00F0) >> 4;
     const int n = opcode & 0x000F;
-    //std::cout << "OP_Dxyn    " << std::hex << x <<" " << y << " " << n << " \n";
+
+    int startX = registers[x] % 64;
+    int startY = registers[y] % 32;
 
     registers[0xF] = 0;
+    bool collision = false;
 
     for (int row = 0; row < n; row++) {
+        if (startY + row > 31) continue;
         for (int col = 0; col < 8; col++) {
-            const int coord = ((registers[x]+col)%64) + 64 * ((registers[y]+row)%32);
+            if (startX + col > 63) break;
+            const int coord = (startX + col) + 64 * (startY + row);
             if (memory[index + row] & (0x80 >> col)) {
-                if (screen.at(coord))
+                if (screen.at(coord) && collision == false){
                     registers[0xF] = 1;
-
+                    collision = true;
+                }
                 screen.at(coord) = !screen.at(coord);
             }
         }
     }
 
     screenChange = true;
+
 }
 
 //Opcode 8xy0
@@ -449,16 +384,17 @@ void Chip8::OP_8xy5() {
 }
 
 //Opcode 8xy6
-//    Set Vx = Vx SHR 1.
+//    Set Vx = Vy SHR 1.
 //    If the least-significant bit of Vx
 //    is 1, then VF is set to 1, otherwise 0.
 //    Then Vx is divided by 2.
 void Chip8::OP_8xy6() {
     //std::cout << "OP_8xy6\n";
     const int x = (opcode & 0x0F00) >> 8;
+    const int y = (opcode & 0x00F0) >> 4;
     const int vx = registers[x];
 
-    registers[x] >>= 1;
+    registers[x] = registers[y] >> 1;
 
     if (vx & 0x1)
         registers[0xF] = 1;
@@ -484,7 +420,7 @@ void Chip8::OP_8xy7() {
 }
 
 //Opcode 8xyE
-//    Set Vx = Vx SHL 1.
+//    Set Vx = Vy SHL 1.
 //    If the most-significant bit of
 //    Vx is 1, then VF is set to 1,
 //    otherwise to 0. Then Vx is
@@ -493,8 +429,9 @@ void Chip8::OP_8xyE() {
     //std::cout << "OP_8xyE\n";
     const int x = (opcode & 0x0F00) >> 8;
     const int vx = registers[x];
+    const int y = (opcode & 0x00F0) >> 4;
 
-    registers[x] <<= 1;
+    registers[x] = registers[y] << 1;
 
     if (vx & 0x80)
         registers[0xF] = 1;
@@ -593,7 +530,7 @@ void Chip8::OP_Fx1E() {
 void Chip8::OP_Fx29() {
     //std::cout << "OP_Fx29\n";
     const int x = (opcode & 0x0F00) >> 8;
-    index = 5 * x + FONTSET_START;
+    index = 5 * registers[x] + FONTSET_START;
 }
 
 //Opcode Fx33
@@ -618,7 +555,8 @@ void Chip8::OP_Fx55() {
     //std::cout << "OP_Fx55\n";
     const int x = (opcode & 0x0F00) >> 8;
     for (int i = 0; i <= x; i++) {
-        memory[index + i] = registers[i];
+        memory[index] = registers[i];
+        index++;
     }
 
 }
@@ -628,7 +566,9 @@ void Chip8::OP_Fx65() {
    //std::cout << "OP_Fx65\n";
     const int x = (opcode & 0x0F00) >> 8;
     for (int i = 0; i <= x; i++) {
-        registers[i] = memory[index + i];
+        registers[i] = memory[index];
+        index++;
     }
+
 }
 

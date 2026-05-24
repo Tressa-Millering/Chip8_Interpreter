@@ -18,6 +18,7 @@ private:
     std::vector<uint8_t> pixels, screenBuffer;
     sf::RenderWindow* window = nullptr;
     std::string romName;
+    std::vector<bool> prevKeys;
 
 
 public:
