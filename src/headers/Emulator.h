@@ -5,7 +5,7 @@
 #ifndef CHIP8_V3_EMULATOR_H
 #define CHIP8_V3_EMULATOR_H
 
-#include <queue>
+
 #include <vector>
 #include <SFML/Graphics.hpp>
 
@@ -29,6 +29,7 @@ public:
     void flipAt(unsigned int, unsigned int);
     void mainLoop();
     void handleEvents();
+
 
 
 };

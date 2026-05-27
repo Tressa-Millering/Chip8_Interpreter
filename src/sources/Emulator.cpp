@@ -6,6 +6,8 @@
 #include <iostream>
 
 #include "../headers/Chip8.h"
+#include <SFML/Audio.hpp>
+#include <cmath>
 
 constexpr unsigned int WIDTH_C = 64;
 constexpr unsigned int HEIGHT_C = 32;
@@ -112,6 +114,19 @@ void Emulator::flipAt(const unsigned int x, const unsigned int y) {
 }
 
 void Emulator::mainLoop() {
+
+    const double SAMPLE_RATE = 44100;
+    const int FREQUENCY = 523;
+    std::vector<int16_t> samples;
+    for (int i = 0; i < SAMPLE_RATE; i++) {
+        samples.push_back(static_cast<int16_t>(32767*sin(2* M_PI * FREQUENCY * i/SAMPLE_RATE)));
+    }
+    std::vector<sf::SoundChannel> channelMap = { sf::SoundChannel::Mono };
+    sf::SoundBuffer buffer(samples.data(), samples.size(), channelMap.size(), SAMPLE_RATE, channelMap);
+
+    sf::Sound sound(buffer);
+    sound.setLooping(true);
+
     const sf::Time FRAME_TIME = sf::seconds(1.f / TIMER_HZ_C);
     const sf::Time CYCLE_TIME = sf::seconds(1.f / CPU_HZ_C);
 
@@ -136,24 +151,34 @@ void Emulator::mainLoop() {
         while (cycleTimer >= CYCLE_TIME) {
             chip8.UpdateKeystate();
             handleEvents();
-            if (!chip8.GetScreenChange())
-                chip8.Cycle();
+            chip8.Cycle();
             cycleTimer -= CYCLE_TIME;
         }
 
+        bool screenUpdated = false;
+
+
         while (frameTimer >= FRAME_TIME) {
             chip8.TickTimers();
-            frameTimer -= FRAME_TIME;
-            if (chip8.GetScreenChange()){
-                updateScreen(chip8.GetScreen());
-                chip8.SetScreenChange(false);
+            if (chip8.GetSoundTimer() > 0 && sound.getStatus() != sf::Sound::Status::Playing) {
+                sound.play();
+            } else if (chip8.GetSoundTimer() <= 0){
+                sound.pause();
             }
+            frameTimer -= FRAME_TIME;
+
         }
 
+        if (chip8.GetScreenChange()){
+            updateScreen(chip8.GetScreen());
+            chip8.SetScreenChange(false);
+            screenUpdated = true;
+        }
 
-        window->clear();
-        window->draw(screenSprite);
-        window->display();
+            window->clear();
+            window->draw(screenSprite);
+            window->display();
+
 
     }
 }
@@ -166,7 +191,6 @@ void Emulator::handleEvents() {
 
     }
 }
-
 
 
 

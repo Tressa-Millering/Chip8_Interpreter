@@ -52,6 +52,10 @@ bool Chip8::GetScreenChange() const{
     return screenChange;
 }
 
+uint8_t Chip8::GetSoundTimer() const {
+    return soundTimer;
+}
+
 void Chip8::SetScreenChange(bool _screenChange) {
     screenChange = _screenChange;
 }

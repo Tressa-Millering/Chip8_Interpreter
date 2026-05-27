@@ -18,6 +18,7 @@ public:
     void TickTimers();
     void UpdateKeystate();
     bool GetScreenChange() const;
+    uint8_t GetSoundTimer() const;
     void SetScreenChange(bool);
     const std::vector<uint8_t>& GetScreen() const;
 
