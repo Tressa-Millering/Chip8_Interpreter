@@ -24,8 +24,12 @@ private:
     std::vector<bool> prevKeys;
     const unsigned int CPU_HZ_C;
     const unsigned int BEEP_FREQ_C;
+    const bool border;
+
     sf::SoundBuffer* soundBuffer;
     sf::Sound* beep;
+    sf::Texture* borderTexture;
+    sf::Sprite* borderSprite;
 
 
 public:
@@ -34,7 +38,8 @@ public:
                    const sf::Color _bgColor = sf::Color::Black,
                    const sf::Color _fgColor = sf::Color::White,
                    const unsigned int _cpuhz = 700,
-                   const unsigned int _frequency = 523);
+                   const unsigned int _frequency = 523,
+                   const bool _border = false);
     ~Emulator();
     void updateScreen(const std::vector<uint8_t>&);
     void flipAt(unsigned int);

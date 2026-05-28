@@ -14,15 +14,13 @@ constexpr unsigned int HEIGHT_C = 32;
 constexpr double TIMER_HZ_C = 60;
 
 
-
-
-
 Emulator::Emulator(const std::string& _romName,
                    const unsigned int _scale,
                    const sf::Color _bgColor,
                    const sf::Color _fgColor,
                    const unsigned int _cpuhz,
-                   const unsigned int _frequency)
+                   const unsigned int _frequency,
+                   const bool _border)
 
                   : SCALE_C(_scale),
                     bgColor(_bgColor),
@@ -31,7 +29,8 @@ Emulator::Emulator(const std::string& _romName,
                     screenSprite(screenTexture),
                     romName(_romName),
                     CPU_HZ_C(_cpuhz),
-                    BEEP_FREQ_C(_frequency){
+                    BEEP_FREQ_C(_frequency),
+                    border(_border){
 
     if (bgColor == fgColor){
         if (fgColor != sf::Color::Black) {
@@ -41,7 +40,7 @@ Emulator::Emulator(const std::string& _romName,
         }
     }
 
-    const double SAMPLE_RATE = 44100;
+    constexpr double SAMPLE_RATE = 44100;
     std::vector<int16_t> samples(SAMPLE_RATE);
     for (int i = 0; i < SAMPLE_RATE; i++) {
         samples.at(i) = static_cast<int16_t>(32767*sin(2* M_PI * BEEP_FREQ_C * i/SAMPLE_RATE));
@@ -66,6 +65,8 @@ Emulator::~Emulator() {
     delete window;
     delete beep;
     delete soundBuffer;
+    delete borderTexture;
+    delete borderSprite;
 }
 
 void Emulator::updateScreen(const std::vector<uint8_t>& buffer) {
@@ -140,6 +141,29 @@ void Emulator::mainLoop() {
     window = new sf::RenderWindow( sf::VideoMode( { WIDTH_C*SCALE_C, HEIGHT_C*SCALE_C} ), "Chip8" );
     window->setVerticalSyncEnabled(false);
     window->setFramerateLimit(0);
+
+    if (border) {
+        std::vector<uint8_t> borderData(4*HEIGHT_C*WIDTH_C*SCALE_C*SCALE_C,0);
+
+        for (int i = 0; i < borderData.size()/4; i++) {
+
+            if (i % SCALE_C == 0 || (((i / (SCALE_C*WIDTH_C)) % SCALE_C) == 0) ||
+                i % SCALE_C == 1 || (((i / (SCALE_C*WIDTH_C)) % SCALE_C) == 1) ||
+                i % SCALE_C == 2 || (((i / (SCALE_C*WIDTH_C)) % SCALE_C) == 2)) {
+                borderData.at(4*i) = bgColor.r;
+                borderData.at(4*i+1) = bgColor.g;
+                borderData.at(4*i+2) = bgColor.b;
+                borderData.at(4*i+3) = 255;
+            }
+        }
+
+        borderTexture = new sf::Texture({WIDTH_C*SCALE_C, HEIGHT_C*SCALE_C});
+        borderTexture->update(borderData.data());
+        borderSprite = new sf::Sprite(*borderTexture);
+        //borderSprite->setScale({static_cast<float>(SCALE_C), static_cast<float>(SCALE_C)});
+
+    }
+
     Chip8 chip8(romName);
 
     sf::Clock clock;
@@ -161,8 +185,6 @@ void Emulator::mainLoop() {
             cycleTimer -= CYCLE_TIME;
         }
 
-        bool screenUpdated = false;
-
 
         while (frameTimer >= FRAME_TIME) {
             chip8.TickTimers();
@@ -178,11 +200,12 @@ void Emulator::mainLoop() {
         if (chip8.GetScreenChange()){
             updateScreen(chip8.GetScreen());
             chip8.SetScreenChange(false);
-            screenUpdated = true;
         }
 
             window->clear();
             window->draw(screenSprite);
+            if (border)
+                window->draw(*borderSprite);
             window->display();
 
 

@@ -9,6 +9,7 @@ int main(const int argc, const char** argv)
 {
 	sf::Color bgColor, fgColor;
 	unsigned int scale = 25, cpuhz = 700, frequency = 523;
+	bool border = false;
 
 
 	std::cout << argc-2 << std::endl;
@@ -18,9 +19,12 @@ int main(const int argc, const char** argv)
 		for (char& c : flag) { c = tolower(c); }
 		for (char& c : input) { c = tolower(c); }
 
-		std::cout << flag << " " << input << std::endl;
+		if (flag == "--border") {
+			i--;
+			border = true;
+		}
 
-		if (flag == "--cpuhz"){
+		else if (flag == "--cpuhz"){
 			try {
 				const int _hz = std::stoi(input);
 				if (_hz < 1) { throw std::exception(); }
@@ -30,7 +34,9 @@ int main(const int argc, const char** argv)
 							 "\033[31mcpuhz argument must be positive integer.\n" << std::endl;
 				return -1;
 			}
-		} else if (flag == "--beep"){
+		}
+
+		else if (flag == "--beep"){
 			try {
 				const int freq = std::stoi(input);
 				if (freq < 1) { throw std::exception(); }
@@ -40,7 +46,9 @@ int main(const int argc, const char** argv)
 							 "\033[31mBeep frequency argument must be positive integer.\n" << std::endl;
 				return -1;
 			}
-		} else if (flag == "--scale"){
+		}
+
+		else if (flag == "--scale"){
 			try {
 				const int sc = std::stoi(input);
 				if (sc < 1) { throw std::exception(); }
@@ -50,7 +58,9 @@ int main(const int argc, const char** argv)
 							 "\033[31mScale argument must be positive integer.\n" << std::endl;
 				return -1;
 			}
-		} else if (flag == "--theme"){
+		}
+
+		else if (flag == "--theme"){
 			if (input == "red") {
 				fgColor = sf::Color::Red;
 				bgColor = sf::Color::Black;
@@ -89,22 +99,35 @@ int main(const int argc, const char** argv)
 							 "\033[31mRun `chip help themes` to see valid themes.\n" << std::endl;
 				return -1;
 			}
+		}
 
-		} else if (flag == "--oncolor") {
+		else if (flag == "--oncolor") {
 			try {
 				if (input.at(0) != '#') throw (std::runtime_error("Invalid Code. No leading \033[37m#."));
+
 				if (input.length() != 7) throw(std::runtime_error("Invalid Length."));
-				const unsigned char R = std::stoi(input.substr(1,2), nullptr, 16);
-				const unsigned char G = std::stoi(input.substr(3,2), nullptr, 16);
-				const unsigned char B = std::stoi(input.substr(5,2), nullptr, 16);
+
+				size_t pos;
+
+				const unsigned char R = std::stoi(input.substr(1,2), &pos, 16);
+				if (pos != 2) throw (std::runtime_error("Invalid Hex Digit in R component."));
+
+				const unsigned char G = std::stoi(input.substr(3,2), &pos, 16);
+				if (pos != 2) throw (std::runtime_error("Invalid Hex Digit in G component."));
+
+				const unsigned char B = std::stoi(input.substr(5,2), &pos, 16);
+				if (pos != 2) throw (std::runtime_error("Invalid Hex Digit in B component."));
+
 				fgColor = sf::Color{R, G, B};
 			} catch (std::exception& e) {
 				std::cout << "\033[31mError processing oncolor argument: \033[33m"<< input << "\n" <<
 							 "\033[31m" << e.what() << "\n\033[31mArgument must be 6 digit hex code starting with #.\n" <<
-								 "For example, #ABC123." << std::endl;
+								 "For example, \033[37m#ABC123." << std::endl;
 				return -1;
 			}
-		} else if (flag == "--offcolor") {
+		}
+
+		else if (flag == "--offcolor") {
 			try {
 				if (input.at(0) != '#') throw (std::runtime_error("Invalid Code. No leading \033[37m#."));
 
@@ -129,13 +152,14 @@ int main(const int argc, const char** argv)
 				return -1;
 			}
 		}
+
 	}
 	std::string fileName = argv[argc - 1];
-	Emulator emu(fileName, scale, bgColor, fgColor, cpuhz, frequency);
+	Emulator emu(fileName, scale, bgColor, fgColor, cpuhz, frequency, border);
 
 
 	emu.mainLoop();
 
 	return 0;
 
-}
+};
