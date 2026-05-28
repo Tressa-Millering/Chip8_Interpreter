@@ -1,4 +1,12 @@
-I'm not writing out documentation just yet, for now this is just notes for myself. 
+I'm not writing out documentation just yet, for now this is 
+just notes for myself. 
+
+--log
+--step
+--dbWin
+
+
+
 
 
 --cpuhz   uInt = 700
@@ -19,6 +27,4 @@ I'm not writing out documentation just yet, for now this is just notes for mysel
 
 --beep frequency = 523
 
---quirks chip = default,
-         super,
-         xo
+

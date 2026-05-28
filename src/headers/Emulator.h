@@ -9,6 +9,9 @@
 #include <vector>
 #include <SFML/Graphics.hpp>
 
+#include "SFML/Audio/Sound.hpp"
+#include "SFML/Audio/SoundBuffer.hpp"
+
 class Emulator {
 private:
     const unsigned int SCALE_C;
@@ -19,10 +22,19 @@ private:
     sf::RenderWindow* window = nullptr;
     std::string romName;
     std::vector<bool> prevKeys;
+    const unsigned int CPU_HZ_C;
+    const unsigned int BEEP_FREQ_C;
+    sf::SoundBuffer* soundBuffer;
+    sf::Sound* beep;
 
 
 public:
-    Emulator(const std::string&, unsigned int, sf::Color, sf::Color);
+    Emulator(const std::string& _romName,
+                   const unsigned int _scale = 25,
+                   const sf::Color _bgColor = sf::Color::Black,
+                   const sf::Color _fgColor = sf::Color::White,
+                   const unsigned int _cpuhz = 700,
+                   const unsigned int _frequency = 523);
     ~Emulator();
     void updateScreen(const std::vector<uint8_t>&);
     void flipAt(unsigned int);

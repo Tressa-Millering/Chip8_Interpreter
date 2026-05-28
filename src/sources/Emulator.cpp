@@ -12,22 +12,26 @@
 constexpr unsigned int WIDTH_C = 64;
 constexpr unsigned int HEIGHT_C = 32;
 constexpr double TIMER_HZ_C = 60;
-constexpr double CPU_HZ_C = 700;
+
 
 
 
 
 Emulator::Emulator(const std::string& _romName,
-                   const unsigned int _scale = 25,
-                   const sf::Color _bgColor = sf::Color::Black,
-                   const sf::Color _fgColor = sf::Color::White)
+                   const unsigned int _scale,
+                   const sf::Color _bgColor,
+                   const sf::Color _fgColor,
+                   const unsigned int _cpuhz,
+                   const unsigned int _frequency)
 
                   : SCALE_C(_scale),
                     bgColor(_bgColor),
                     fgColor(_fgColor),
                     screenTexture({WIDTH_C, HEIGHT_C}),
                     screenSprite(screenTexture),
-                    romName(_romName){
+                    romName(_romName),
+                    CPU_HZ_C(_cpuhz),
+                    BEEP_FREQ_C(_frequency){
 
     if (bgColor == fgColor){
         if (fgColor != sf::Color::Black) {
@@ -36,6 +40,17 @@ Emulator::Emulator(const std::string& _romName,
             fgColor = sf::Color::White;
         }
     }
+
+    const double SAMPLE_RATE = 44100;
+    std::vector<int16_t> samples(SAMPLE_RATE);
+    for (int i = 0; i < SAMPLE_RATE; i++) {
+        samples.at(i) = static_cast<int16_t>(32767*sin(2* M_PI * BEEP_FREQ_C * i/SAMPLE_RATE));
+    }
+    const std::vector<sf::SoundChannel> channelMap = { sf::SoundChannel::Mono };
+    soundBuffer = new sf::SoundBuffer(samples.data(), samples.size(), channelMap.size(), SAMPLE_RATE, channelMap);
+    beep = new sf::Sound(*soundBuffer);
+    beep->setLooping(true);
+
     for (int i = 0; i < HEIGHT_C*WIDTH_C; i++) {
         screenBuffer.push_back(0);
         pixels.push_back(bgColor.r);
@@ -49,6 +64,8 @@ Emulator::Emulator(const std::string& _romName,
 
 Emulator::~Emulator() {
     delete window;
+    delete beep;
+    delete soundBuffer;
 }
 
 void Emulator::updateScreen(const std::vector<uint8_t>& buffer) {
@@ -115,17 +132,6 @@ void Emulator::flipAt(const unsigned int x, const unsigned int y) {
 
 void Emulator::mainLoop() {
 
-    const double SAMPLE_RATE = 44100;
-    const int FREQUENCY = 523;
-    std::vector<int16_t> samples;
-    for (int i = 0; i < SAMPLE_RATE; i++) {
-        samples.push_back(static_cast<int16_t>(32767*sin(2* M_PI * FREQUENCY * i/SAMPLE_RATE)));
-    }
-    std::vector<sf::SoundChannel> channelMap = { sf::SoundChannel::Mono };
-    sf::SoundBuffer buffer(samples.data(), samples.size(), channelMap.size(), SAMPLE_RATE, channelMap);
-
-    sf::Sound sound(buffer);
-    sound.setLooping(true);
 
     const sf::Time FRAME_TIME = sf::seconds(1.f / TIMER_HZ_C);
     const sf::Time CYCLE_TIME = sf::seconds(1.f / CPU_HZ_C);
@@ -160,10 +166,10 @@ void Emulator::mainLoop() {
 
         while (frameTimer >= FRAME_TIME) {
             chip8.TickTimers();
-            if (chip8.GetSoundTimer() > 0 && sound.getStatus() != sf::Sound::Status::Playing) {
-                sound.play();
+            if (chip8.GetSoundTimer() > 0 && beep->getStatus() != sf::Sound::Status::Playing) {
+                beep->play();
             } else if (chip8.GetSoundTimer() <= 0){
-                sound.pause();
+                beep->pause();
             }
             frameTimer -= FRAME_TIME;
 
