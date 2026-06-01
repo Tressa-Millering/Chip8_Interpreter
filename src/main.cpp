@@ -106,7 +106,7 @@ int main(const int argc, const char** argv)
 				bgColor = sf::Color{54, 133, 159};
 			} else {
 				std::cout << "\033[31mError processing theme argument: \033[33m"<< input << "\n" <<
-							 "\033[31mRun `chip help themes` to see valid themes.\n" << std::endl;
+							 "\033[31mRun `chip --help themes` to see valid themes.\n" << std::endl;
 				return -1;
 			}
 		}
@@ -163,7 +163,12 @@ int main(const int argc, const char** argv)
 			}
 		}
 
-		else if (flag == "-h" || flag == "-help") {
+		else if (flag == "-h" || flag == "--help") {
+			if (input == "themes") {
+				std::cout << "OUTPUT LIST OF THEMES";
+				continue;
+			}
+
 			i--;
 			std::cout << "OUTPUT HELP MESSAGE";
 		}
@@ -172,8 +177,8 @@ int main(const int argc, const char** argv)
 			std::cout << "\033[31mUnrecognized argument: \033[33m"<< flag << "\n" <<
 						 "Run `chip -h` or `chip -help` for legal arguments." << std::endl;
 		}
-
 	}
+
 	std::string fileName = argv[argc - 1];
 	Emulator emu(fileName, scale, bgColor, fgColor, cpuhz, border, frequency);
 
