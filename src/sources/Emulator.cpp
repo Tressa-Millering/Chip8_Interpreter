@@ -33,7 +33,7 @@ Emulator::Emulator(const std::string& _romName,
 
     colorInit();
     soundInit(frequency);
-    screenInit();
+    textureInit();
     CYCLE_TIME = sf::seconds(1.f / cpuhz);
 }
 
@@ -111,6 +111,8 @@ void Emulator::flipAt(const unsigned int x, const unsigned int y) {
 void Emulator::MainLoop(const bool step, const bool debug) {
     if (BORDER_C)
         borderInit();
+
+    windowInit();
 
     Chip8 chip8(romName);
 
@@ -237,7 +239,7 @@ void Emulator::colorInit() {
     }
 }
 
-void Emulator::screenInit() {
+void Emulator::textureInit() {
     for (int i = 0; i < HEIGHT_C*WIDTH_C; i++) {
         screenBuffer.push_back(0);
         pixels.push_back(bgColor.r);

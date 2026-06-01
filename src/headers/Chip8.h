@@ -10,6 +10,7 @@
 #include "SFML/Window/Keyboard.hpp"
 
 
+
 class Chip8 {
 
 public:
@@ -21,6 +22,7 @@ public:
     uint8_t GetSoundTimer() const;
     void SetScreenChange(bool);
     const std::vector<uint8_t>& GetScreen() const;
+
 
 
 private:
@@ -155,6 +157,22 @@ private:
     void OP_Fx33();
     void OP_Fx55();
     void OP_Fx65();
+
+
+    struct ChipData {
+        std::vector<uint8_t> registers;
+        std::vector<uint16_t> stack = std::vector<uint16_t>(16, 0);
+        uint16_t index;
+        uint16_t progCounter;
+        uint8_t stackPointer;
+        uint16_t opcode;
+ 
+        uint8_t soundTimer;
+        uint8_t delayTimer;
+
+        std::vector<bool> keys = std::vector<bool>(16, false);
+
+    };
 
 };
 

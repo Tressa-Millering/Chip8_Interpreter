@@ -3,11 +3,9 @@ just notes for myself.
 
 Escape pause key
 
---log
-
 --step || -i 
 
---dbWin
+--debug -d 
 
 
 

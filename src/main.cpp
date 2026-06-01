@@ -29,10 +29,11 @@ int main(const int argc, const char** argv)
 			step = true;
 		}
 
-		else if (flag == "--debug" || flag == "-d") {
-			i--;
-			debug = true;
-		}
+		//DEBUG MODE TO DEVELOPED
+		// else if (flag == "--debug" || flag == "-d") {
+		// 	i--;
+		// 	debug = true;
+		// }
 
 		else if (flag == "--cpuhz" || flag == "-h"){
 			try {
@@ -129,6 +130,7 @@ int main(const int argc, const char** argv)
 				if (pos != 2) throw (std::runtime_error("Invalid Hex Digit in B component."));
 
 				fgColor = sf::Color{R, G, B};
+
 			} catch (std::exception& e) {
 				std::cout << "\033[31mError processing oncolor argument: \033[33m"<< input << "\n" <<
 							 "\033[31m" << e.what() << "\n\033[31mArgument must be 6 digit hex code starting with #.\n" <<
@@ -155,6 +157,7 @@ int main(const int argc, const char** argv)
 				if (pos != 2) throw (std::runtime_error("Invalid Hex Digit in B component."));
 
 				bgColor = sf::Color{R, G, B};
+
 			} catch (std::exception& e) {
 				std::cout << "\033[31mError processing offcolor argument: \033[33m"<< input << "\n" <<
 							 "\033[31m" << e.what() << "\n\033[31mArgument must be 6 digit hex code starting with #.\n" <<
@@ -173,6 +176,11 @@ int main(const int argc, const char** argv)
 			std::cout << "OUTPUT HELP MESSAGE";
 		}
 
+		else if (flag == "-v" || flag == "--version") {
+			i--;
+			std::cout << "OUTPUT VERSION MESSAGE";
+		}
+
 		else {
 			std::cout << "\033[31mUnrecognized argument: \033[33m"<< flag << "\n" <<
 						 "Run `chip -h` or `chip -help` for legal arguments." << std::endl;
@@ -180,7 +188,7 @@ int main(const int argc, const char** argv)
 	}
 
 	std::string fileName = argv[argc - 1];
-	Emulator emu(fileName, scale, bgColor, fgColor, cpuhz, border, frequency);
+	Emulator emu(fileName, scale, bgColor, fgColor, border, frequency, cpuhz);
 
 	emu.MainLoop(step, debug);
 

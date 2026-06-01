@@ -41,7 +41,7 @@ private:
     void windowInit();
     void soundInit(unsigned int);
     void colorInit();
-    void screenInit();
+    void textureInit();
     void drawScreen() const;
     void updateScreen(const std::vector<uint8_t>&);
     void flipAt(unsigned int);
