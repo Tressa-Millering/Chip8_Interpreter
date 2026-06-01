@@ -1,30 +1,28 @@
 I'm not writing out documentation just yet, for now this is 
 just notes for myself. 
 
+Escape pause key
+
 --log
---step
+
+--step || -i 
+
 --dbWin
 
 
 
+--border || -b (adds border between pixels)
 
+--cpuhz  || -hz            uInt = 700
 
---cpuhz   uInt = 700
+--scale  || -s             uInt = 25
 
---scale   uInt = 25
+--theme  || -t 
 
---theme   Red,
-          blue,
-          green,
-          pink,
-          octo,
-          pastel,
-          rose
-          
---oncolor string ColorCode
+--oncolor || -on string ColorCode
 
---offcolor string ColorCode
+--offcolor || -off string ColorCode
 
---beep frequency = 523
+--beep   || -f            frequency = 523
 
 

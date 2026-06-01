@@ -25,6 +25,7 @@ void Chip8::Cycle() {
 
     opcode = (memory.at(progCounter) << 8) | memory.at(progCounter+1);
     progCounter += 2;
+
     callOpcode();
 
 }

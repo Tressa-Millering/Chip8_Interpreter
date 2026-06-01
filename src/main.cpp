@@ -9,7 +9,7 @@ int main(const int argc, const char** argv)
 {
 	sf::Color bgColor, fgColor;
 	unsigned int scale = 25, cpuhz = 700, frequency = 523;
-	bool border = false;
+	bool border = false, step = false, debug = false;
 
 
 	std::cout << argc-2 << std::endl;
@@ -19,24 +19,34 @@ int main(const int argc, const char** argv)
 		for (char& c : flag) { c = tolower(c); }
 		for (char& c : input) { c = tolower(c); }
 
-		if (flag == "--border") {
+		if (flag == "--border" || flag == "-b") {
 			i--;
 			border = true;
 		}
 
-		else if (flag == "--cpuhz"){
+		else if (flag == "--step" || flag == "-i") {
+			i--;
+			step = true;
+		}
+
+		else if (flag == "--debug" || flag == "-d") {
+			i--;
+			debug = true;
+		}
+
+		else if (flag == "--cpuhz" || flag == "-h"){
 			try {
 				const int _hz = std::stoi(input);
 				if (_hz < 1) { throw std::exception(); }
 				cpuhz = _hz;
-			} catch (std::exception) {
+			} catch (std::exception&) {
 				std::cout << "\033[31mError processing CPU speed argument: \033[33m"<< input << "\n" <<
 							 "\033[31mcpuhz argument must be positive integer.\n" << std::endl;
 				return -1;
 			}
 		}
 
-		else if (flag == "--beep"){
+		else if (flag == "--beep" || flag == "-f"){
 			try {
 				const int freq = std::stoi(input);
 				if (freq < 1) { throw std::exception(); }
@@ -48,7 +58,7 @@ int main(const int argc, const char** argv)
 			}
 		}
 
-		else if (flag == "--scale"){
+		else if (flag == "--scale" || flag == "-s"){
 			try {
 				const int sc = std::stoi(input);
 				if (sc < 1) { throw std::exception(); }
@@ -60,7 +70,7 @@ int main(const int argc, const char** argv)
 			}
 		}
 
-		else if (flag == "--theme"){
+		else if (flag == "--theme" || flag == "-t"){
 			if (input == "red") {
 				fgColor = sf::Color::Red;
 				bgColor = sf::Color::Black;
@@ -101,7 +111,7 @@ int main(const int argc, const char** argv)
 			}
 		}
 
-		else if (flag == "--oncolor") {
+		else if (flag == "--oncolor" || flag == "-on") {
 			try {
 				if (input.at(0) != '#') throw (std::runtime_error("Invalid Code. No leading \033[37m#."));
 
@@ -127,7 +137,7 @@ int main(const int argc, const char** argv)
 			}
 		}
 
-		else if (flag == "--offcolor") {
+		else if (flag == "--offcolor" || flag == "-off") {
 			try {
 				if (input.at(0) != '#') throw (std::runtime_error("Invalid Code. No leading \033[37m#."));
 
@@ -153,12 +163,21 @@ int main(const int argc, const char** argv)
 			}
 		}
 
+		else if (flag == "-h" || flag == "-help") {
+			i--;
+			std::cout << "OUTPUT HELP MESSAGE";
+		}
+
+		else {
+			std::cout << "\033[31mUnrecognized argument: \033[33m"<< flag << "\n" <<
+						 "Run `chip -h` or `chip -help` for legal arguments." << std::endl;
+		}
+
 	}
 	std::string fileName = argv[argc - 1];
-	Emulator emu(fileName, scale, bgColor, fgColor, cpuhz, frequency, border);
+	Emulator emu(fileName, scale, bgColor, fgColor, cpuhz, border, frequency);
 
-
-	emu.mainLoop();
+	emu.MainLoop(step, debug);
 
 	return 0;
 
