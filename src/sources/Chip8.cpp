@@ -2,6 +2,19 @@
 // Created by Tressa Millering on 3/31/2026.
 //
 
+/*********************************************
+    SFML Chip8 Interpreter - Chip8
+
+    Provides the actual Chip8 functionality
+    through opcodes, memory data, and CPU
+    cycle. Designed to be given to an emulator
+    esque framework and called there. It doesn't
+    cycle itself
+
+    Code by Tressa Millering
+*********************************************/
+
+
 #include "../headers/Chip8.h"
 #include <fstream>
 

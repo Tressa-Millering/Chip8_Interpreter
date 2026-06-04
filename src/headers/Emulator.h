@@ -2,20 +2,33 @@
 // Created by Tressa Millering on 3/31/2026.
 //
 
+/******************************************
+    SFML Chip8 Interpreter - Emulator
+
+    This class provides the framework
+    for actually running the Chip8
+    interpreter. Primary purpose is
+    handling the SFML side of code.
+    Designed such that it could be
+    reworked to run a different
+    interpreter/emulator without too
+    much difficulty.
+
+    Code by Tressa Millering
+*******************************************/
+
 #ifndef CHIP8_V3_EMULATOR_H
 #define CHIP8_V3_EMULATOR_H
 
-
 #include <vector>
 #include <SFML/Graphics.hpp>
-
 #include "SFML/Audio/Sound.hpp"
 #include "SFML/Audio/SoundBuffer.hpp"
 
 class Emulator {
 private:
-
     std::string romName;
+    const sf::Time CYCLE_TIME_C;
 
     //Screen Variables
     const unsigned int SCALE_C;
@@ -33,32 +46,31 @@ private:
     sf::SoundBuffer* soundBuffer;
     sf::Sound* beep;
 
-    sf::Time CYCLE_TIME;
 
     //FUNCTIONS
     void borderInit();
-    std::string trimRomName() const;
     void windowInit();
     void soundInit(unsigned int);
     void colorInit();
     void textureInit();
-    void drawScreen() const;
-    void updateScreen(const std::vector<uint8_t>&);
+    std::string trimRomName() const;
+    void updateScreenTexture(const std::vector<uint8_t>&);
     void flipAt(unsigned int);
     void flipAt(unsigned int, unsigned int);
-    void handleEvents();
-    void handleEvents(bool&);
+    void drawScreen() const;
+    void handleEvents() const;
+    void handleEvents(bool&) const;
 
 public:
-    Emulator(const std::string& _romName,
-                   const unsigned int _scale = 25,
-                   const sf::Color _bgColor = sf::Color::Black,
-                   const sf::Color _fgColor = sf::Color::White,
-                   const bool _border = false,
-                   const unsigned int frequency = 523,
-                   const unsigned int cpuhz = 700);
+    explicit Emulator(const std::string& _romName,
+                      unsigned int _scale = 25,
+                      sf::Color _bgColor = sf::Color::Black,
+                      sf::Color _fgColor = sf::Color::White,
+                      bool _border = false,
+                      unsigned int frequency = 523,
+                      unsigned int cpuhz = 700);
     ~Emulator();
-    void MainLoop(bool step = false, bool debug = false);
+    void MainLoop(bool step = false);
 
 };
 

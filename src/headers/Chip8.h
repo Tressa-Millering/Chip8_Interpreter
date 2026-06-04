@@ -1,6 +1,19 @@
 //
 // Created by Tressa Millering on 3/31/2026.
 //
+
+/*********************************************
+    SFML Chip8 Interpreter - Chip8
+
+    Provides the actual Chip8 functionality
+    through opcodes, memory data, and CPU
+    cycle. Designed to be given to an emulator
+    esque framework and called there. It doesn't
+    cycle itself
+
+    Code by Tressa Millering
+*********************************************/
+
 #ifndef CHIP8_V3_CHIP8_H
 #define CHIP8_V3_CHIP8_H
 
@@ -14,7 +27,7 @@
 class Chip8 {
 
 public:
-    Chip8(const std::string&);
+    explicit Chip8(const std::string&);
     void Cycle();
     void TickTimers();
     void UpdateKeystate();
@@ -106,13 +119,14 @@ private:
     int waitingForKey = -1;
 
 
-    //FUNCTIONS
+    //FUNCTION TABLES
     void (Chip8::*masterTable[0xF + 1])();
     void (Chip8::*table0[0xE + 1])();
     void (Chip8::*table8[0xE + 1])();
     void (Chip8::*tableE[0xE + 1])();
     void (Chip8::*tableF[0x65 + 1])();
 
+    //FUNCTIONS
     void loadRom();
     void loadFonts();
     void tableInit();
@@ -157,24 +171,7 @@ private:
     void OP_Fx33();
     void OP_Fx55();
     void OP_Fx65();
-
-
-    struct ChipData {
-        std::vector<uint8_t> registers;
-        std::vector<uint16_t> stack = std::vector<uint16_t>(16, 0);
-        uint16_t index;
-        uint16_t progCounter;
-        uint8_t stackPointer;
-        uint16_t opcode;
- 
-        uint8_t soundTimer;
-        uint8_t delayTimer;
-
-        std::vector<bool> keys = std::vector<bool>(16, false);
-
-    };
-
 };
 
 
-#endif //CMAKESFMLPROJECT_CHIP8_H
+#endif
