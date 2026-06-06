@@ -16,7 +16,7 @@
 #include <SFML/Graphics.hpp>
 #include "headers/Emulator.h"
 
-constexpr double VERSION_C = 1.0;
+constexpr double VERSION_C = 1.0001;
 
 void PrintVersion();
 void PrintHelpMessage();
@@ -34,6 +34,12 @@ int main(const int argc, const char** argv) {
 
 	bool border = false,
 		 step = false;
+
+	if (argc < 2) {
+		std::cout << "\033[31mNo arguments provided. Run `chip --help` to see usage.\n";
+		return -1;
+	}
+
 
 	for (int i = 1; i < argc-1; i+=2) {
 		std::string flag = argv[i];
@@ -172,7 +178,8 @@ int main(const int argc, const char** argv) {
 				std::cout << "\033[31mError processing oncolor argument: \033[33m"<< input << "\n" <<
 							 "\033[31m" << e.what() <<
 							 "\n\033[31mArgument must be 6 digit hex code starting with #.\n" <<
-							 "For example, \033[37m#ABC123.\n";
+							 "For example, \033[37m#ABC123.\n" << 
+							 "Note that on some systems, this will need to be in quotes.\n"  << std::endl;
 				return -1;
 			}
 		}
@@ -205,7 +212,8 @@ int main(const int argc, const char** argv) {
 				std::cout << "\033[31mError processing offcolor argument: \033[33m"<< input << "\n" <<
 							 "\033[31m" << e.what() <<
 							 "\n\033[31mArgument must be 6 digit hex code starting with #.\n" <<
-							 "For example, \033[37m#ABC123." << std::endl;
+							 "For example, \033[37m#ABC123.\n" << 
+							 "Note that on some systems, this will need to be in quotes.\n"  << std::endl;
 				return -1;
 			}
 		}
@@ -254,7 +262,8 @@ int main(const int argc, const char** argv) {
 	}
 	else {
 		std::cout << "\033[31mError: \033[33m"<< fileName << " is not a Chip8 ROM.\n" <<
-						 "\033[31mROM name must end in the `.ch8` suffix.\n";
+						 "\033[31mROM name must end in the `.ch8` suffix.\n" << 
+						 "If trying to input a flag, type `chip --help` for legal options.\n";
 		return -1;
 	}
 
@@ -263,12 +272,12 @@ int main(const int argc, const char** argv) {
 };
 
 void PrintVersion() {
-	std::cout << "Tressa Millering's Chip8 Interpreter - Ver. " << std::setprecision(2) << VERSION_C
-		  << "\nUses SFML Ver. 3.0.2";
+	std::cout << "Tressa Millering's Chip8 Interpreter - Ver. " <<  std::fixed << std::setprecision(1) << VERSION_C
+		  << "\nUses SFML Ver. 3.0.2\n";
 }
 
 void PrintHelpMessage() {
-	std::cout << "Chip: An SFML based Chip8 Interpreter by Tressa Millering. Ver. " << std::setprecision(2) << VERSION_C << "\n\n" <<
+	std::cout << "Chip: An SFML based Chip8 Interpreter by Tressa Millering. Ver. " << std::fixed << std::setprecision(1) << VERSION_C << "\n\n" <<
 						 "<> denote required arguments, [] denote optional arguments.\n"
 						 "Options and arguments are case insensitive. Order of options is not enforced.\n" <<
 						 "They are evaluated left-to-right, overwriting duplicates with the most recent.\n\n" <<
@@ -299,7 +308,7 @@ void PrintThemesList() {
 				 "\033[37mPink             \e[38;2;120;120;120mBlack            \e[38;2;255;175;255mPink        \n" <<
 				 "\033[37mOcto             \e[38;2;176;94;0mDark Orange      \e[38;2;255;196;0mLight Orange		\n" <<
 				 "\033[37mPastel           \e[38;2;196;167;231mLavender         \e[38;2;66;159;196mTurquoise	\n" <<
-				 "\033[37mRose             \e[38;2;66;22;35mDark Pink        \e[38;2;255;200;255mLight Pink		\n" <<
+				 "\033[37mRose             \e[38;2;96;52;65mDark Pink        \e[38;2;255;200;255mLight Pink		\n" <<
 				 "\033[37mGhost            \e[38;2;120;120;120mDark Gray        \e[38;2;199;199;199mLight Gray  \n" <<
 				 "\033[37mBlippi           \e[38;2;156;207;216mLight Orange     \e[38;2;246;193;119mLight Blue  \n" <<
 				 "\033[37mAlien            \e[38;2;108;45;139mMagenta          \e[38;2;185;243;54mLime			\n" <<
