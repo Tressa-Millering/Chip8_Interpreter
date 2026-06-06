@@ -70,7 +70,7 @@ public:
                       unsigned int frequency = 523,
                       unsigned int cpuhz = 700);
     ~Emulator();
-    void MainLoop(bool step = false);
+    int MainLoop(bool step = false);
 
 };
 

@@ -35,6 +35,7 @@ public:
     uint8_t GetSoundTimer() const;
     void SetScreenChange(bool);
     const std::vector<uint8_t>& GetScreen() const;
+    bool GetError() const;
 
 
 
@@ -118,6 +119,7 @@ private:
     std::vector<bool> prevKeys = std::vector<bool>(16, false);;
     int waitingForKey = -1;
 
+    bool error = false;
 
     //FUNCTION TABLES
     void (Chip8::*masterTable[0xF + 1])();

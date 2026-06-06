@@ -79,13 +79,17 @@ const std::vector<uint8_t>& Chip8::GetScreen() const{
     return screen;
 }
 
+bool Chip8::GetError() const {
+    return error;
+}
+
 
 
 void Chip8::loadRom() {
     try {
         std::ifstream romFile(romName, std::ios::ate | std::ios::binary);
         if(!romFile.is_open()) {
-            throw std::runtime_error("Could not open file.");
+            throw std::runtime_error("Could not open file at " + romName + "\n\n");
         }
 
         const std::streamsize size = romFile.tellg();
@@ -102,6 +106,7 @@ void Chip8::loadRom() {
     }
     catch (std::exception& e) {
         std::cerr << "Error: " << e.what();
+        error = true;
     }
 
 }

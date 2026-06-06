@@ -7,6 +7,8 @@ Escape pause key
 
 --debug -d 
 
+--color-flip
+
 
 
 --border || -b (adds border between pixels)

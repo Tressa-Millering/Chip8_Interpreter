@@ -141,18 +141,21 @@ void Emulator::flipAt(const unsigned int x, const unsigned int y) {
     screenTexture.update(pixels.data());
 }
 
-void Emulator::MainLoop(const bool step) {
+int Emulator::MainLoop(const bool step) {
     /* *
      * Main emulator loop for Chip8.
      *
      * @param step: determines if stepper mode is enabled
      * */
+    Chip8 chip8(romName);
+    if (chip8.GetError())
+        return -1;
+
     if (BORDER_C)
         borderInit();
 
     windowInit();
 
-    Chip8 chip8(romName);
 
     sf::Clock clock;
     sf::Time frameTimer = sf::Time::Zero;
@@ -197,6 +200,7 @@ void Emulator::MainLoop(const bool step) {
 
         drawScreen();
     }
+    return 0;
 }
 
 void Emulator::handleEvents() const {

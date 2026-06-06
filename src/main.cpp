@@ -11,12 +11,20 @@
 ***************************************/
 
 #include <iostream>
+#include <iomanip>
 #include <cstring>
 #include <SFML/Graphics.hpp>
 #include "headers/Emulator.h"
 
-int main(const int argc, const char** argv)
-{
+constexpr double VERSION_C = 1.0;
+
+void PrintVersion();
+void PrintHelpMessage();
+void PrintThemesList();
+
+int main(const int argc, const char** argv) {
+	std::string fileName = argv[argc - 1];
+
 	sf::Color bgColor,
 			  fgColor;
 
@@ -26,7 +34,6 @@ int main(const int argc, const char** argv)
 
 	bool border = false,
 		 step = false;
-
 
 	for (int i = 1; i < argc-1; i+=2) {
 		std::string flag = argv[i];
@@ -44,7 +51,7 @@ int main(const int argc, const char** argv)
 			step = true;
 		}
 
-		else if (flag == "--cpuhz" || flag == "-h"){
+		else if (flag == "--cpuhz" || flag == "-c"){
 			try {
 				const int _hz = std::stoi(input);
 				if (_hz < 1)
@@ -53,7 +60,7 @@ int main(const int argc, const char** argv)
 			}
 			catch (std::exception&) {
 				std::cout << "\033[31mError processing CPU speed argument: \033[33m"<< input << "\n" <<
-							 "\033[31mcpuhz argument must be positive integer.\n";
+							 "\033[31mCPU Hz argument must be positive integer.\n";
 				return -1;
 			}
 		}
@@ -137,7 +144,7 @@ int main(const int argc, const char** argv)
 			}
 		}
 
-		else if (flag == "--oncolor" || flag == "-on") {
+		else if (flag == "--oncolor" || flag == "-o") {
 			try {
 				if (input.at(0) != '#')
 					throw (std::runtime_error("Invalid Code. No leading \033[37m#."));
@@ -170,7 +177,7 @@ int main(const int argc, const char** argv)
 			}
 		}
 
-		else if (flag == "--offcolor" || flag == "-off") {
+		else if (flag == "--offcolor" || flag == "-x") {
 			try {
 				if (input.at(0) != '#')
 					throw (std::runtime_error("Invalid Code. No leading \033[37m#."));
@@ -205,30 +212,97 @@ int main(const int argc, const char** argv)
 
 		else if (flag == "-h" || flag == "--help") {
 			if (input == "themes") {
-				std::cout << "OUTPUT LIST OF THEMES";
+				PrintThemesList();
 				continue;
 			}
 
 			i--;
-			std::cout << "OUTPUT HELP MESSAGE";
+			PrintHelpMessage();
 		}
 
 		else if (flag == "-v" || flag == "--version") {
 			i--;
-			std::cout << "OUTPUT VERSION MESSAGE";
+			PrintVersion();
+		}
+
+		else if (flag == "--color-flip") {
+			i--;
+			sf::Color temp = bgColor;
+			bgColor = fgColor;
+			fgColor = temp;
 		}
 
 		else {
 			std::cout << "\033[31mUnrecognized argument: \033[33m"<< flag << "\n" <<
 						 "Run `chip -h` or `chip -help` for legal arguments.\n";
+			return -1;
 		}
 	}
 
-	std::string fileName = argv[argc - 1];
-	Emulator emu(fileName, scale, bgColor, fgColor, border, frequency, cpuhz);
 
-	emu.MainLoop(step);
+	if (fileName == "-h" || fileName == "--help") {
+		PrintHelpMessage();
+	} else if (fileName == "themes" && std::string(argv[argc - 2]) == "-h" || std::string(argv[argc - 2]) == "--help") {
+		return 0;
+	}
+	else if (fileName == "-v" || fileName == "--version"){
+		PrintVersion();
+	}
+	else if (fileName.length() >= 4 && fileName.substr(fileName.length()-4, fileName.length()-1) == ".ch8") {
+		Emulator emu(fileName, scale, bgColor, fgColor, border, frequency, cpuhz);
+		return emu.MainLoop(step);
+	}
+	else {
+		std::cout << "\033[31mError: \033[33m"<< fileName << " is not a Chip8 ROM.\n" <<
+						 "\033[31mROM name must end in the `.ch8` suffix.\n";
+		return -1;
+	}
 
 	return 0;
 
 };
+
+void PrintVersion() {
+	std::cout << "Tressa Millering's Chip8 Interpreter - Ver. " << std::setprecision(2) << VERSION_C
+		  << "\nUses SFML Ver. 3.0.2";
+}
+
+void PrintHelpMessage() {
+	std::cout << "Chip: An SFML based Chip8 Interpreter by Tressa Millering. Ver. " << std::setprecision(2) << VERSION_C << "\n\n" <<
+						 "<> denote required arguments, [] denote optional arguments.\n"
+						 "Options and arguments are case insensitive. Order of options is not enforced.\n" <<
+						 "They are evaluated left-to-right, overwriting duplicates with the most recent.\n\n" <<
+						 "usage: `chip [options] <path-to-rom>`\n\n" <<
+						 "Legal options are as follows:\n" <<
+						 "\t-h | --help       [themes]          Outputs help message detailing program usage.\n" <<
+						 "\t                                    Passing argument \"themes\" will list legal themes.\n" <<
+						 "\t-v | --version                      Outputs version number of interpreter.\n" <<
+						 "\t-b | --border                       Enabling draws a grid between each pixel on the screen. Off by default.\n" <<
+						 "\t-i | --step                         Enables step mode. Advance to next opcode by pressing space. Off by default.\n" <<
+						 "\t-c | --cpuhz      <unsigned_int>    Set CPU Hz of interpreter. 700 by default.\n" <<
+						 "\t-f | --beep       <unsigned_int>    Set beep frequency. 523 by default.\n" <<
+						 "\t-t | --theme      <string>          Set color theme of interpreter.\n" <<
+						 "\t-o | --oncolor    <hex-code>	    Set on-color of pixels. Expects a 6 digit hex-code preceded by a #.\n" <<
+						 "\t-x | --offcolor   <hex-code>        Set off-color of pixels. Expects a 6 digit hex-code preceded by a #.\n" <<
+						 "\t--color-flip                        Flip background and foreground colors of theme.\n" <<
+						 	"\n";
+
+}
+
+void PrintThemesList() {
+	std::cout << "The following themes can be used with the -t option.\n" <<
+			     "NOTE: Text colors do not perfectly match theme colors.\n\n" <<
+				 "THEME NAME  ---  BACKGROUND  ---  FOREGROUND\n" <<
+				 "\033[37mRed              \e[38;2;120;120;120mBlack            \e[38;2;255;0;0mRed				\n" <<
+				 "\033[37mGreen            \e[38;2;120;120;120mBlack            \e[38;2;0;255;0mGreen			\n" <<
+				 "\033[37mBlue             \e[38;2;120;120;120mBlack            \e[38;2;0;0;255mBlue			\n" <<
+				 "\033[37mPink             \e[38;2;120;120;120mBlack            \e[38;2;255;175;255mPink        \n" <<
+				 "\033[37mOcto             \e[38;2;176;94;0mDark Orange      \e[38;2;255;196;0mLight Orange		\n" <<
+				 "\033[37mPastel           \e[38;2;196;167;231mLavender         \e[38;2;66;159;196mTurquoise	\n" <<
+				 "\033[37mRose             \e[38;2;66;22;35mDark Pink        \e[38;2;255;200;255mLight Pink		\n" <<
+				 "\033[37mGhost            \e[38;2;120;120;120mDark Gray        \e[38;2;199;199;199mLight Gray  \n" <<
+				 "\033[37mBlippi           \e[38;2;156;207;216mLight Orange     \e[38;2;246;193;119mLight Blue  \n" <<
+				 "\033[37mAlien            \e[38;2;108;45;139mMagenta          \e[38;2;185;243;54mLime			\n" <<
+				 "\033[37mRiver            \e[38;2;54;133;159mMagenta          \e[38;2;0;235;180mLime			\n" <<
+				 	"\n";
+}
