@@ -1,4 +1,5 @@
-#Tressa Millering's 
+# Tressa Millering's Chip8 Interpreter
+> Note: This repo is  a a fork of the SFML CMake Template repo found q
 
 This repo is a fork of the SFML CMake Template repo.
 
