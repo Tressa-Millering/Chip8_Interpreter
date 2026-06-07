@@ -1,4 +1,6 @@
-This repo is a fork of the SFML CMake Template repo. 
+#Tressa Millering's 
+
+This repo is a fork of the SFML CMake Template repo.
 
 I'm not writing out documentation just yet, for now this is 
 just notes for myself. 

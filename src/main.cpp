@@ -12,7 +12,6 @@
 
 #include <iostream>
 #include <iomanip>
-#include <cstring>
 #include <SFML/Graphics.hpp>
 #include "headers/Emulator.h"
 
@@ -36,7 +35,7 @@ int main(const int argc, const char** argv) {
 		 step = false;
 
 	if (argc < 2) {
-		std::cout << "\033[31mNo arguments provided. Run `chip --help` to see usage.\n";
+		std::cout << "\033[31mNo arguments provided. Run `chip --help` to see usage.\033[0m\n";
 		return -1;
 	}
 
@@ -66,7 +65,7 @@ int main(const int argc, const char** argv) {
 			}
 			catch (std::exception&) {
 				std::cout << "\033[31mError processing CPU speed argument: \033[33m"<< input << "\n" <<
-							 "\033[31mCPU Hz argument must be positive integer.\n";
+							 "\033[31mCPU Hz argument must be positive integer.\033[0m\n";
 				return -1;
 			}
 		}
@@ -80,7 +79,7 @@ int main(const int argc, const char** argv) {
 			}
 			catch (std::exception&) {
 				std::cout << "\033[31mError processing beep frequency argument: \033[33m"<< input << "\n" <<
-							 "\033[31mBeep frequency argument must be positive integer.\n";
+							 "\033[31mBeep frequency argument must be positive integer.\033[0m\n";
 				return -1;
 			}
 		}
@@ -93,7 +92,7 @@ int main(const int argc, const char** argv) {
 			}
 			catch (std::exception&) {
 				std::cout << "\033[31mError processing scale argument: \033[33m"<< input << "\n" <<
-							 "\033[31mScale argument must be positive integer.\n";
+							 "\033[31mScale argument must be positive integer.\033[0m\n";
 				return -1;
 			}
 		}
@@ -145,7 +144,7 @@ int main(const int argc, const char** argv) {
 			}
 			else {
 				std::cout << "\033[31mError processing theme argument: \033[33m"<< input << "\n" <<
-							 "\033[31mRun `chip --help themes` to see valid themes.\n";
+							 "\033[31mRun `chip --help themes` to see valid themes.\033[0m\n";
 				return -1;
 			}
 		}
@@ -179,7 +178,7 @@ int main(const int argc, const char** argv) {
 							 "\033[31m" << e.what() <<
 							 "\n\033[31mArgument must be 6 digit hex code starting with #.\n" <<
 							 "For example, \033[37m#ABC123.\n" << 
-							 "Note that on some systems, this will need to be in quotes.\n"  << std::endl;
+							 "Note that on some systems, this will need to be in quotes.\033[0m\n"  << std::endl;
 				return -1;
 			}
 		}
@@ -213,7 +212,7 @@ int main(const int argc, const char** argv) {
 							 "\033[31m" << e.what() <<
 							 "\n\033[31mArgument must be 6 digit hex code starting with #.\n" <<
 							 "For example, \033[37m#ABC123.\n" << 
-							 "Note that on some systems, this will need to be in quotes.\n"  << std::endl;
+							 "Note that on some systems, this will need to be in quotes.\033[0m\n"  << std::endl;
 				return -1;
 			}
 		}
@@ -242,7 +241,7 @@ int main(const int argc, const char** argv) {
 
 		else {
 			std::cout << "\033[31mUnrecognized argument: \033[33m"<< flag << "\n" <<
-						 "Run `chip -h` or `chip -help` for legal arguments.\n";
+						 "Run `chip -h` or `chip -help` for legal arguments.\033[0m\n";
 			return -1;
 		}
 	}
@@ -263,7 +262,7 @@ int main(const int argc, const char** argv) {
 	else {
 		std::cout << "\033[31mError: \033[33m"<< fileName << " is not a Chip8 ROM.\n" <<
 						 "\033[31mROM name must end in the `.ch8` suffix.\n" << 
-						 "If trying to input a flag, type `chip --help` for legal options.\n";
+						 "If trying to input a flag, type `chip --help` for legal options.\033[0m\n";
 		return -1;
 	}
 

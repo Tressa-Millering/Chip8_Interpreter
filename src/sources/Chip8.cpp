@@ -18,13 +18,9 @@
 #include "../headers/Chip8.h"
 #include <fstream>
 
-//debugging
+
 #include <iostream>
 #include <iomanip>
-#include <bitset>
-
-
-
 
 Chip8::Chip8(const std::string& _romName) : romName(_romName) {
     loadRom();

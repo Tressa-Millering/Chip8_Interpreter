@@ -1,3 +1,7 @@
+
+#ifndef CHIP8_V3_EMULATOR_H
+#define CHIP8_V3_EMULATOR_H
+
 //
 // Created by Tressa Millering on 3/31/2026.
 //
@@ -17,9 +21,6 @@
     Code by Tressa Millering
 *******************************************/
 
-#ifndef CHIP8_V3_EMULATOR_H
-#define CHIP8_V3_EMULATOR_H
-
 #include <vector>
 #include <SFML/Graphics.hpp>
 #include "SFML/Audio/Sound.hpp"
@@ -36,15 +37,15 @@ private:
     sf::Texture screenTexture;
     sf::Sprite screenSprite;
     std::vector<uint8_t> pixels, screenBuffer;
-    sf::RenderWindow* window;
+    sf::RenderWindow* window = nullptr;
 
     const bool BORDER_C;
-    sf::Texture* borderTexture;
-    sf::Sprite* borderSprite;
+    sf::Texture* borderTexture = nullptr;
+    sf::Sprite* borderSprite = nullptr;
 
     //Sound Variables
-    sf::SoundBuffer* soundBuffer;
-    sf::Sound* beep;
+    sf::SoundBuffer* soundBuffer = nullptr;
+    sf::Sound* beep = nullptr;
 
 
     //FUNCTIONS

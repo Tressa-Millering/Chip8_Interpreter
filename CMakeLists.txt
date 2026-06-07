@@ -20,5 +20,9 @@ add_executable(${TARGET_NAME} src/main.cpp
         src/headers/Chip8.h)
 target_compile_features(${TARGET_NAME} PRIVATE cxx_std_17)
 target_link_libraries(${TARGET_NAME} PRIVATE SFML::Graphics SFML::Window SFML::System SFML::Audio)
-
+target_link_options(${TARGET_NAME} PRIVATE
+        -static-libgcc
+        -static-libstdc++
+        -static
+)
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${TARGET_NAME})

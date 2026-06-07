@@ -1,3 +1,6 @@
+#ifndef CHIP8_V3_CHIP8_H
+#define CHIP8_V3_CHIP8_H
+
 //
 // Created by Tressa Millering on 3/31/2026.
 //
@@ -13,9 +16,6 @@
 
     Code by Tressa Millering
 *********************************************/
-
-#ifndef CHIP8_V3_CHIP8_H
-#define CHIP8_V3_CHIP8_H
 
 #include <vector>
 #include <string>

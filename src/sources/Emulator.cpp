@@ -54,11 +54,11 @@ Emulator::Emulator(const std::string& _romName,
 }
 
 Emulator::~Emulator() {
-    delete window;
     delete beep;
     delete soundBuffer;
-    delete borderTexture;
     delete borderSprite;
+    delete borderTexture;
+    delete window;
 }
 
 void Emulator::updateScreenTexture(const std::vector<uint8_t>& buffer) {
@@ -147,6 +147,8 @@ int Emulator::MainLoop(const bool step) {
      *
      * @param step: determines if stepper mode is enabled
      * */
+    windowInit();
+
     Chip8 chip8(romName);
     if (chip8.GetError())
         return -1;
@@ -154,7 +156,6 @@ int Emulator::MainLoop(const bool step) {
     if (BORDER_C)
         borderInit();
 
-    windowInit();
 
 
     sf::Clock clock;
@@ -235,16 +236,26 @@ void Emulator::borderInit() {
      * Initializes member variables for pixel border
      * */
     std::vector<uint8_t> borderData(4*HEIGHT_C*WIDTH_C*SCALE_C*SCALE_C,0);
-
-    for (int i = 0; i < borderData.size()/4; i++) {
-        if (i % SCALE_C == 0 || (((i / (SCALE_C*WIDTH_C)) % SCALE_C) == 0) ||
-            i % SCALE_C == 1 || (((i / (SCALE_C*WIDTH_C)) % SCALE_C) == 1) ||
-            i % SCALE_C == 2 || (((i / (SCALE_C*WIDTH_C)) % SCALE_C) == 2))
-        {
-            borderData.at(4*i) = bgColor.r;
-            borderData.at(4*i+1) = bgColor.g;
-            borderData.at(4*i+2) = bgColor.b;
-            borderData.at(4*i+3) = 255;
+    if (SCALE_C >= 3) {
+        for (size_t i = 0; i < borderData.size()/4; i++) {
+            if (i % SCALE_C == 0 || (((i / (SCALE_C*WIDTH_C)) % SCALE_C) == 0) ||
+                i % SCALE_C == 1 || (((i / (SCALE_C*WIDTH_C)) % SCALE_C) == 1) ||
+                i % SCALE_C == 2 || (((i / (SCALE_C*WIDTH_C)) % SCALE_C) == 2))
+            {
+                borderData.at(4*i) = bgColor.r;
+                borderData.at(4*i+1) = bgColor.g;
+                borderData.at(4*i+2) = bgColor.b;
+                borderData.at(4*i+3) = 255;
+            }
+        }
+    } else if (SCALE_C == 2) {
+        for (size_t i = 0; i < borderData.size()/4; i++) {
+            if (i % SCALE_C == 0 || (((i / (SCALE_C*WIDTH_C)) % SCALE_C) == 0)) {
+                borderData.at(4*i) = bgColor.r;
+                borderData.at(4*i+1) = bgColor.g;
+                borderData.at(4*i+2) = bgColor.b;
+                borderData.at(4*i+3) = 255;
+            }
         }
     }
 
