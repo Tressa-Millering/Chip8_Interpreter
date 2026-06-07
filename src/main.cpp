@@ -290,8 +290,8 @@ void PrintHelpMessage() {
 						 "\t-c | --cpuhz      <unsigned_int>    Set CPU Hz of interpreter. 700 by default.\n" <<
 						 "\t-f | --beep       <unsigned_int>    Set beep frequency. 523 by default.\n" <<
 						 "\t-t | --theme      <string>          Set color theme of interpreter.\n" <<
-						 "\t-o | --oncolor    <hex-code>	    Set on-color of pixels. Expects a 6 digit hex-code preceded by a #.\n" <<
-						 "\t-x | --offcolor   <hex-code>        Set off-color of pixels. Expects a 6 digit hex-code preceded by a #.\n" <<
+						 "\t-o | --oncolor    <#rrggbb>	    Set on-color of pixels. Expects a 6 digit hex-code preceded by a #.\n" <<
+						 "\t-x | --offcolor   <#rrggbb>        Set off-color of pixels. Expects a 6 digit hex-code preceded by a #.\n" <<
 						 "\t--color-flip                        Flip background and foreground colors of theme.\n" <<
 						 	"\n";
 
@@ -311,6 +311,6 @@ void PrintThemesList() {
 				 "\033[37mGhost            \e[38;2;120;120;120mDark Gray        \e[38;2;199;199;199mLight Gray  \n" <<
 				 "\033[37mBlippi           \e[38;2;156;207;216mLight Orange     \e[38;2;246;193;119mLight Blue  \n" <<
 				 "\033[37mAlien            \e[38;2;108;45;139mMagenta          \e[38;2;185;243;54mLime			\n" <<
-				 "\033[37mRiver            \e[38;2;54;133;159mMagenta          \e[38;2;0;235;180mLime			\n" <<
+				 "\033[37mRiver            \e[38;2;54;133;159mAqua          \e[38;2;0;235;180mTurquoise			\n" <<
 				 	"\n";
 }
