@@ -1,4 +1,5 @@
 # Tressa Millering's Chip8 Interpreter
+> Note: This repository is a fork of the SFML CMake template repository, hence the contributors. All code for the interpreter itself was written by me.
 ***
 ## Overview
 This is a command line interpreter for the Chip8, a programming language
